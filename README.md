@@ -25,92 +25,104 @@ Generated using a bootstrapping script.
 
 ## Installation
 
-1.  **Clone the repository (if applicable):**
-    ```bash
-    # git clone <your-repo-url>
-    # cd be_auth_service
-    ```
+1. **Clone the repository (if applicable):**
 
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
+   ```bash
+   # git clone <your-repo-url>
+   # cd be_auth_service
+   ```
+2. **Install dependencies:**
+
+   ```bash
+   npm install
+   ```
 
 ## Environment Variables
 
-1.  **Copy the example environment file:**
-    ```bash
-    cp .env.example .env
-    ```
+1. **Copy the example environment file:**
 
-2.  **Edit the `.env` file** with your specific settings:
-    * `PORT`: The port the server will run on (default: 3000).
-    * `MONGO_URI`: Your MongoDB connection string (default: mongodb://localhost:27017/be_auth_service).
-    * Add any other necessary variables (e.g., JWT secrets, API keys).
+   ```bash
+   cp .env.example .env
+   ```
+2. **Edit the `.env` file** with your specific settings:
+
+   * `PORT`: The port the server will run on (default: 3000).
+   * `MONGO_URI`: Your MongoDB connection string (default: mongodb://localhost:27017/be_auth_service).
+   * Add any other necessary variables (e.g., JWT secrets, API keys).
 
 ## Running the Application
 
 * **Development Mode (with auto-reload):**
-    ```bash
-    npm run dev
-    ```
-    This uses `nodemon` to automatically restart the server when files change.
 
+  ```bash
+  npm run dev
+  ```
+
+  This uses `nodemon` to automatically restart the server when files change.
 * **Production Mode:**
-    ```bash
-    npm run start
-    ```
-    This runs the application using `node`. Ensure your `.env` file has production-ready settings.
+
+  ```bash
+  npm run start
+  ```
+
+  This runs the application using `node`. Ensure your `.env` file has production-ready settings.
 
 ## Running Tests
 
 * **Run all tests:**
-    ```bash
-    npm test
-    ```
 
+  ```bash
+  npm test
+  ```
 * **Run tests with coverage report:**
-    ```bash
-    npm run test:coverage
-    ```
-    Coverage reports will be generated in the `coverage/` directory.
+
+  ```bash
+  npm run test:coverage
+  ```
+
+  Coverage reports will be generated in the `coverage/` directory.
 
 ## Linting
 
 * **Check for linting errors:**
-    ```bash
-    npm run lint
-    ```
 
+  ```bash
+  npm run lint
+  ```
 * **Optional: Fix linting errors automatically (if possible):**
-    ```bash
-    npm run lint -- --fix
-    ```
+
+  ```bash
+  npm run lint -- --fix
+  ```
 
 ## Docker Usage
 
 Make sure Docker is installed and running on your system.
 
 * **Build the Docker Image:**
-    ```bash
-    npm run docker:build
-    # or directly: docker build -t be_auth_service .
-    ```
-    This will build a Docker image named `be_auth_service` based on the .
 
+  ```bash
+  npm run docker:build
+  # or directly: docker build -t be_auth_service .
+  ```
+
+  This will build a Docker image named `be_auth_service` based on the .
 * **Run the Docker Container (detached mode):**
-    ```bash
-    npm run docker:run
-    # or directly: docker run -p 3000:3000 -d be_auth_service
-    ```
-    This will run the built image as a detached container, mapping port 3000 from the container to your host.
 
+  ```bash
+  npm run docker:run
+  # or directly: docker run -p 3000:3000 -d be_auth_service
+  ```
+
+  This will run the built image as a detached container, mapping port 3000 from the container to your host.
 * **Run the Docker Container (development mode - with volume mount):**
-    ```bash
-    npm run docker:run-dev
-    # or directly: docker run -p 3000:3000 -it --rm -v $(pwd):/app be_auth_service
-    ```
-    This runs the container in interactive mode, removes it after exit, and mounts your current working directory into the container's  directory. This is useful for development as changes on your host will reflect inside the container without rebuilding the image.
+
+  ```bash
+  npm run docker:run-dev
+  # or directly: docker run -p 3000:3000 -it --rm -v $(pwd):/app be_auth_service
+  ```
+
+  This runs the container in interactive mode, removes it after exit, and mounts your current working directory into the container's  directory. This is useful for development as changes on your host will reflect inside the container without rebuilding the image.
 
 ## Project Structure
 
@@ -154,8 +166,3 @@ Make sure Docker is installed and running on your system.
 ## Contributing
 
 Contributions are welcome! Please follow standard Git workflow (fork, branch, commit, pull request). Ensure tests pass and linting rules are followed.
-
-## License
-
-(Add your license information here, e.g., MIT)
-# be_auth_service
