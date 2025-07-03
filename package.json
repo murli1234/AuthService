@@ -1,0 +1,35 @@
+{
+  "name": "be_auth_service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "build": "echo \"No build step configured\"",
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "lint": "eslint .",
+    "test:coverage": "jest --coverage",
+    "docker:build": "docker build -t be_auth_service .",
+    "docker:run": "docker run -p 3000:3000 -d be_auth_service",
+    "docker:run-dev": "docker run -p 3000:3000 -it --rm -v $(pwd):/app be_auth_service"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.0.1",
+    "express": "^5.1.0",
+    "mongoose": "^8.16.1"
+  },
+  "devDependencies": {
+    "@jest/globals": "^30.0.4",
+    "eslint": "^9.30.1",
+    "eslint-config-prettier": "^10.1.5",
+    "jest": "^30.0.4",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2"
+  }
+}
