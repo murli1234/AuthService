@@ -1,6 +1,6 @@
 import otpSchema from "../models/schema/otp.schema.js";
 import { generateUniqueUsername } from "../models/repository/user.repository.js";
-import User from "../models/schema/user.schema.js"
+import User from "../models/schema/user.schema.js";
 import ReferralCodeSchema from "../models/schema/reference.code.js";
 import salesPersonReferralCodeSchema from "../models/schema/salesPersonReferralCode.schema.js";
 import jwt from "jsonwebtoken";
@@ -10,6 +10,7 @@ import { Axios } from "axios";
 import blockedUserSchema from "../models/schema/blocked.user.schema.js";
 import moment from "moment-timezone";
 import bcrypt from "bcrypt";
+import CompanySchema from "../models/schema/company.schema.js"
 
 // export const addUser = async (req, res) => {
 //   try {
@@ -258,12 +259,14 @@ export const addUser = async (req, res) => {
     // }
 
     if (data.account_type === "COMPANY") {
-      await Company.create({
+      const company = new CompanySchema({
         company_name: data.name,
         business_type: data.business_type || null,
         user_id: newUser._id,
-        referred_by: salesReferral?.created_by,
+        referred_by: salesReferral?.created_by || null,
       });
+
+      await company.save();
       console.log("🏢 Company entry created");
     }
 
@@ -479,11 +482,9 @@ export const verifyOtp = async (req, res) => {
         "minutes"
       );
       console.warn(`🔒 OTP attempts locked. Wait ${diffMinutes} minutes.`);
-      return res
-        .status(400)
-        .json({
-          message: `Account locked for ${diffMinutes} mins. Try later.`,
-        });
+      return res.status(400).json({
+        message: `Account locked for ${diffMinutes} mins. Try later.`,
+      });
     }
 
     // Max Attempts
@@ -636,15 +637,14 @@ export const verifyOtp = async (req, res) => {
   }
 };
 
-
 export const getUser = async (req, res) => {
-  try{
-
-    
+  try {
     const user = await User.findById(req.userId);
-    return res.status(200).json({status:true, data:user, }) 
-  }catch(err){
+    return res.status(200).json({ status: true, data: user });
+  } catch (err) {
     console.error("🔥 Error in getUser:", err.message);
-    return res.status(500).json({ message: "Error fetching user", error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Error fetching user", error: err.message });
   }
-}
+};
