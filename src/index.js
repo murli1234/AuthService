@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cors from "cors"; // Import cors
 import { beyonderLogger } from "./utils/logger.js";
-import apiRoutes from "./routes/index.js"; // Renamed for clarity
+import userRouter from "./routes/user.routes.js";
 import { connectDB } from "./config/database.js";
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -13,37 +13,36 @@ import swaggerUi from 'swagger-ui-express';
 
 // Load environment variables
 dotenv.config();
-
 // Determine which .env file to use based on NODE_ENV
 const getEnvPath = () => {
   switch (process.env.NODE_ENV) {
     case "PROD":
       return ".env.prod";
-    case "DEV":
-      return ".env.dev";
-    default:
-      return ".env.test";
-  }
-};
-
-let envFile = getEnvPath();
-
-// Load the appropriate .env file
-dotenv.config({ path: envFile });
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-console.log(
-  "server.js 1 ----------- ",
-  process.env.NODE_ENV,
-  getEnvPath(),
-  process.env.HOST,
-  __dirname,
-  envFile
-);
-
-
+      case "DEV":
+        return ".env.dev";
+        default:
+          return ".env.test";
+        }
+      };
+      
+      let envFile = getEnvPath();
+      
+      // Load the appropriate .env file
+      dotenv.config({ path: envFile });
+      
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      
+      console.log(
+        "server.js 1 ----------- ",
+        process.env.NODE_ENV,
+        getEnvPath(),
+        process.env.HOST,
+        __dirname,
+        envFile
+      );
+      
+      
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -54,8 +53,7 @@ app.use(cors());
 app.use(express.json());
 // Optional: Parse URL-encoded request bodies
 // app.use(express.urlencoded({ extended: true }));
-
-
+app.use('/api', userRouter); 
 
 //swagger doc
 
@@ -85,7 +83,7 @@ const swaggerOptions = {
     servers: [ 
       {
      // url:`localhost:3000`,
-     // url:`${process.env.APP_URL}`
+      url:`${process.env.APP_URL}`
       //url:`http://13.201.253.18:5000`
       },
     ],
@@ -106,10 +104,8 @@ app.get('/uploads/:filename', (req, res) => {
   });
 });
 
-
-
 // --- API Routes ---
-app.use("/api", apiRoutes);
+
 
 // --- Root Endpoint ---
 app.get("/", (req, res) => {

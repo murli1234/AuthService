@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/users/add-user:
+ * /api/add-user:
  *   post:
  *     summary: Register a new user
  *     description: |
@@ -8,7 +8,7 @@
  *       Verifies OTP and stores uploaded images to AWS S3.
  *       Returns a JWT token upon successful registration.
  *     tags:
- *       - Users
+ *       - Authentication
  *     requestBody:
  *       required: true
  *       content:
@@ -93,14 +93,14 @@
 
 /**
  * @swagger
- * /api/users/sent-otp:
+ * /api/sent-otp:
  *   post:
  *     summary: Send OTP to a user
  *     description: |
  *       Sends an OTP to the user's mobile number via SMS or WhatsApp depending on the `type` specified.
  *       - Handles OTP resend limit, lock time, and supports multiple gateways (SMSWALA, MSG91, Gallabox).
  *     tags:
- *       - Users
+ *       - Authentication
  *     requestBody:
  *       required: true
  *       content:
@@ -154,7 +154,7 @@
 
 /**
  * @swagger
- * /api/users/verify-otp:
+ * /api/verify-otp:
  *   post:
  *     summary: Verify OTP and authenticate user
  *     description: |
@@ -163,7 +163,7 @@
  *       - Handles account lock due to repeated failed attempts or expiry.
  *       - If user does not exist, prompts registration.
  *     tags:
- *       - Users
+ *       - Authentication
  *     requestBody:
  *       required: true
  *       content:
@@ -232,4 +232,37 @@
  *                   example: OTP is expired. Please resend OTP.
  *       500:
  *         description: Server Error
+ */
+/**
+ * @swagger
+ * /api/get-user:
+ *   get:
+ *     summary: Get the currently authenticated user
+ *     tags:
+ *       - User
+ *     responses:
+ *       200:
+ *         description: Successfully fetched user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Unauthorized
+ *       500:
+ *         description: Server error while fetching user
  */

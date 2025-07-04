@@ -1,16 +1,15 @@
 import otpSchema from "../models/schema/otp.schema.js";
 import { generateUniqueUsername } from "../models/repository/user.repository.js";
-import User from "../models/schema/user.schema.js";
+import User from "../models/schema/user.schema.js"
 import ReferralCodeSchema from "../models/schema/reference.code.js";
 import salesPersonReferralCodeSchema from "../models/schema/salesPersonReferralCode.schema.js";
-import jwt from 'jsonwebtoken';
-import * as userRepository from '../models/repository/user.repository.js';
+import jwt from "jsonwebtoken";
+import * as userRepository from "../models/repository/user.repository.js";
 import { sendGallaboxOTP } from "../services/whatsappService.js";
 import { Axios } from "axios";
-import blockedUserSchema from "../models/schema/blocked.user.schema.js"
-import moment from 'moment-timezone';
-import bcrypt from 'bcrypt';
-
+import blockedUserSchema from "../models/schema/blocked.user.schema.js";
+import moment from "moment-timezone";
+import bcrypt from "bcrypt";
 
 // export const addUser = async (req, res) => {
 //   try {
@@ -150,36 +149,47 @@ export const addUser = async (req, res) => {
     console.log("📥 Payload:", data);
     console.log("📷 Uploaded Files:", Object.keys(files || {}));
 
-    if (data.have_a_bike === 'true') {
-      if (!files?.bike_image || !files?.driving_license_image || !data.bike_no) {
+    if (data.have_a_bike === "true") {
+      if (
+        !files?.bike_image ||
+        !files?.driving_license_image ||
+        !data.bike_no
+      ) {
         console.warn("⚠️ Missing bike details");
-        return res.status(400).json({ message: 'Bike details required' });
+        return res.status(400).json({ message: "Bike details required" });
       }
     }
 
     const existingUser = await User.findOne({
-      $or: [{ contact_no: data.contact_no }, { email: data.email }]
+      $or: [{ contact_no: data.contact_no }, { email: data.email }],
     });
     if (existingUser) {
       console.warn("❌ User already exists");
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: "User already exists" });
     }
 
     const username = await generateUniqueUsername(data.name, data.contact_no);
     console.log("👤 Generated username:", username);
 
-    const otp = await otpSchema.findOne({ contact_no: data.contact_no, preUser: false, isVerified: true });
+    const otp = await otpSchema.findOne({
+      contact_no: data.contact_no,
+      preUser: false,
+      isVerified: true,
+    });
     if (!otp) {
       console.warn("📴 Mobile not verified");
-      return res.status(400).json({ message: 'Mobile no. not verified' });
+      return res.status(400).json({ message: "Mobile no. not verified" });
     }
 
-    const hashedPassword = data.password ? await bcrypt.hash(data.password, 10) : null;
+    const hashedPassword = data.password
+      ? await bcrypt.hash(data.password, 10)
+      : null;
     console.log("🔐 Password hashed");
 
     // Trim and handle optional referral fields
     const referralCode = data.referred_by_code?.trim() || null;
-    const salesReferralCode = data.sales_person_referred_by_code?.trim() || null;
+    const salesReferralCode =
+      data.sales_person_referred_by_code?.trim() || null;
 
     let referral = null;
     let salesReferral = null;
@@ -188,13 +198,15 @@ export const addUser = async (req, res) => {
       referral = await ReferralCodeSchema.findOne({ code: referralCode });
     }
 
-    if (data.account_type === 'COMPANY' && referralCode) {
-      salesReferral = await salesPersonReferralCodeSchema.findOne({ code: referralCode });
+    if (data.account_type === "COMPANY" && referralCode) {
+      salesReferral = await salesPersonReferralCodeSchema.findOne({
+        code: referralCode,
+      });
     }
 
     if (referralCode && !referral && !salesReferral) {
       console.warn("❌ Invalid referral code");
-      return res.status(400).json({ message: 'Invalid referral code' });
+      return res.status(400).json({ message: "Invalid referral code" });
     }
 
     const newUser = new User({
@@ -209,7 +221,12 @@ export const addUser = async (req, res) => {
     console.log("✅ New user created with ID:", newUser._id);
 
     const imageMap = {};
-    for (const field of ['profile_image', 'pan_card_image', 'bike_image', 'driving_license_image']) {
+    for (const field of [
+      "profile_image",
+      "pan_card_image",
+      "bike_image",
+      "driving_license_image",
+    ]) {
       if (files?.[field]) {
         const file = files[field][0];
         const path = `user/${newUser._id}/${field}/${Date.now()}_${file.originalname}`;
@@ -240,12 +257,12 @@ export const addUser = async (req, res) => {
     //   console.log("📧 Welcome email sent");
     // }
 
-    if (data.account_type === 'COMPANY') {
+    if (data.account_type === "COMPANY") {
       await Company.create({
         company_name: data.name,
         business_type: data.business_type || null,
         user_id: newUser._id,
-        referred_by: salesReferral?.created_by
+        referred_by: salesReferral?.created_by,
       });
       console.log("🏢 Company entry created");
     }
@@ -257,7 +274,7 @@ export const addUser = async (req, res) => {
     const token = jwt.sign(
       { id: newUser._id, username, account_type: data.account_type },
       process.env.JWT_SECRET,
-      { expiresIn: '180d' }
+      { expiresIn: "180d" }
     );
     console.log("🔑 JWT token generated");
 
@@ -266,14 +283,15 @@ export const addUser = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'User created successfully',
+      message: "User created successfully",
       data: newUser,
-      token
+      token,
     });
-
   } catch (err) {
     console.error("🔥 Error in addUser:", err.message);
-    return res.status(500).json({ message: 'Error creating user', error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Error creating user", error: err.message });
   }
 };
 
@@ -283,7 +301,10 @@ export const sendOtp = async (req, res) => {
     console.log("📩 sendOtp called with:", { contact_no, action, type });
 
     // Step 1: Check for deletion request
-    const isDiscarded = await userRepository.discardAccountDeletionRequest(contact_no, action);
+    const isDiscarded = await userRepository.discardAccountDeletionRequest(
+      contact_no,
+      action
+    );
     console.log("🧹 Deletion request status:", isDiscarded);
 
     if (isDiscarded === "DELETION_REQUEST_INITIATED") {
@@ -307,7 +328,9 @@ export const sendOtp = async (req, res) => {
     if (existingOtp?.lock_time && now.isBefore(existingOtp.lock_time)) {
       const diff = moment(existingOtp.lock_time).diff(now, "minutes");
       console.warn(`⏳ Account is locked for ${diff} minutes`);
-      return res.status(400).json({ message: `Locked for ${diff} mins. Try later.` });
+      return res
+        .status(400)
+        .json({ message: `Locked for ${diff} mins. Try later.` });
     }
 
     // Step 4: Max resend count check
@@ -322,16 +345,20 @@ export const sendOtp = async (req, res) => {
           resend_count: 0,
         }
       );
-      return res.status(400).json({ message: "Max resend count exceeded. Locked for 60 mins." });
+      return res
+        .status(400)
+        .json({ message: "Max resend count exceeded. Locked for 60 mins." });
     }
 
     // Step 5 & 6: Generate & (conditionally) Send OTP
     let OTP = "112233";
-    const isProd =process.env.NODE_ENV === "PROD" ? true : false;
+    const isProd = process.env.NODE_ENV === "PROD" ? true : false;
     console.log("🌍 Environment:", isProd);
-    
 
-    if (isProd && !["1122334455", "1234567890", "1234567899"].includes(contact_no)) {
+    if (
+      isProd &&
+      !["1122334455", "1234567890", "1234567899"].includes(contact_no)
+    ) {
       OTP = Math.floor(100000 + Math.random() * 900000).toString();
       console.log("✅ [PROD] Generated OTP:", OTP);
 
@@ -342,10 +369,13 @@ export const sendOtp = async (req, res) => {
         sendGallaboxOTP(contact_no, OTP);
       } else if (count === 0) {
         const smsUrl = `https://sms.smswala.in/app/smsapi/index.php?key=${process.env.SMS_WALA_KEY}&routeid=${process.env.SMS_WALA_ROUTE_ID}&senderid=${process.env.SMS_WALA_NEW_SENDER_ID}&campaign=${process.env.SMS_WALA_CAMPAIGN}&type=text&contacts=${contact_no}&msg=${encodeURIComponent(
-          OTP + " is the OTP to login to your BlueEra account. It is valid for 5 minutes. Do not share with anyone. zULpRrKsNN3"
+          OTP +
+            " is the OTP to login to your BlueEra account. It is valid for 5 minutes. Do not share with anyone. zULpRrKsNN3"
         )}&template_id=${BigInt(process.env.SMS_WALA_NEW_OTP_TEMPLATE_ID)}`;
         console.log("📤 [PROD] Sending SMS via SMSWALA:", smsUrl);
-        Axios.get(smsUrl).catch(err => console.error("SMSWALA Error:", err.message));
+        Axios.get(smsUrl).catch((err) =>
+          console.error("SMSWALA Error:", err.message)
+        );
       } else {
         const data = {
           template_id: process.env.MSG91_TEMPLATE_ID,
@@ -359,8 +389,10 @@ export const sendOtp = async (req, res) => {
             "content-type": "application/json",
           },
         })
-          .then(res => console.log("MSG91 Response:", res.data))
-          .catch(err => console.error("MSG91 Error:", err.response?.data || err.message));
+          .then((res) => console.log("MSG91 Response:", res.data))
+          .catch((err) =>
+            console.error("MSG91 Error:", err.response?.data || err.message)
+          );
       }
     } else {
       console.log("🧪 [DEV/TEST] Skipping OTP send. Using default OTP:", OTP);
@@ -369,18 +401,21 @@ export const sendOtp = async (req, res) => {
     // Step 7: Save or update OTP record
     if (existingOtp) {
       console.log("🔄 Updating existing OTP record");
-      await otpSchema.updateOne({ _id: existingOtp._id }, {
-        otp: OTP,
-        preUser: false,
-        isVerified: false,
-        resend_count:
-          existingOtp.resend_count > 0 && existingOtp.resend_count < 6
-            ? existingOtp.resend_count + 1
-            : 1,
-        expiry_time: expiryTime,
-        lock_time: null,
-        failure_attempts: 0,
-      });
+      await otpSchema.updateOne(
+        { _id: existingOtp._id },
+        {
+          otp: OTP,
+          preUser: false,
+          isVerified: false,
+          resend_count:
+            existingOtp.resend_count > 0 && existingOtp.resend_count < 6
+              ? existingOtp.resend_count + 1
+              : 1,
+          expiry_time: expiryTime,
+          lock_time: null,
+          failure_attempts: 0,
+        }
+      );
     } else {
       console.log("🆕 Creating new OTP record");
       await otpSchema.create({
@@ -397,10 +432,11 @@ export const sendOtp = async (req, res) => {
 
     console.log("✅ OTP creation process completed");
     return res.status(200).json({ message: "OTP created successfully." });
-
   } catch (err) {
     console.error("🔥 Error in sendOtp:", err.message);
-    return res.status(500).json({ message: "Error sending OTP", error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Error sending OTP", error: err.message });
   }
 };
 
@@ -423,16 +459,31 @@ export const verifyOtp = async (req, res) => {
     const lockTime = curDateIST.clone().add(60, "minutes").toDate();
 
     // OTP Expired
-    if (numberisExisting.expiry_time && currentDate.isAfter(numberisExisting.expiry_time)) {
+    if (
+      numberisExisting.expiry_time &&
+      currentDate.isAfter(numberisExisting.expiry_time)
+    ) {
       console.warn("⏱️ OTP expired at:", numberisExisting.expiry_time);
-      return res.status(400).json({ message: "OTP is expired. Please resend OTP." });
+      return res
+        .status(400)
+        .json({ message: "OTP is expired. Please resend OTP." });
     }
 
     // User is locked
-    if (numberisExisting.lock_time && currentDate.isBefore(numberisExisting.lock_time)) {
-      const diffMinutes = moment(numberisExisting.lock_time).diff(currentDate, "minutes");
+    if (
+      numberisExisting.lock_time &&
+      currentDate.isBefore(numberisExisting.lock_time)
+    ) {
+      const diffMinutes = moment(numberisExisting.lock_time).diff(
+        currentDate,
+        "minutes"
+      );
       console.warn(`🔒 OTP attempts locked. Wait ${diffMinutes} minutes.`);
-      return res.status(400).json({ message: `Account locked for ${diffMinutes} mins. Try later.` });
+      return res
+        .status(400)
+        .json({
+          message: `Account locked for ${diffMinutes} mins. Try later.`,
+        });
     }
 
     // Max Attempts
@@ -444,7 +495,9 @@ export const verifyOtp = async (req, res) => {
         lock_time: lockTime,
         failure_attempts: 0,
       });
-      return res.status(400).json({ message: "Max attempts exceeded. Locked for 60 mins." });
+      return res
+        .status(400)
+        .json({ message: "Max attempts exceeded. Locked for 60 mins." });
     }
 
     // ✅ OTP Match
@@ -457,26 +510,66 @@ export const verifyOtp = async (req, res) => {
       if (preUser) {
         if (preUser.deleted_at) {
           console.warn("❌ User account deletion already requested");
-          return res.status(400).json({ message: "User account deletion was requested already." });
+          return res
+            .status(400)
+            .json({ message: "User account deletion was requested already." });
         }
 
         const isBlocked = await blockedUserSchema.findOne({
           blockedTo: preUser._id,
-          status: "ADMIN_BLOCKED"
+          status: "ADMIN_BLOCKED",
         });
         console.log("🛑 Admin block check:", isBlocked?.type || "Not Blocked");
+        const {
+          _id,
+          name,
+          username,
+          email,
+          contact_no,
+          role,
+          account_type,
+          profile_image,
+          referral_points,
+          device_token,
+          one_signal_player_id,
+          language,
+          registration_status,
+          kyc_status,
+        } = preUser.toObject(); // toObject strips Mongoose methods
 
-        const token = jwt.sign({
-          contact_no: preUser.contact_no,
-          account_type: preUser.account_type,
-          username: preUser.username
-        }, process.env.JWT_SECRET, { expiresIn: "180d" });
+        const tokenPayload = {
+          _id,
+          name,
+          username,
+          email,
+          contact_no,
+          role,
+          account_type,
+          profile_image,
+          referral_points,
+          device_token,
+          one_signal_player_id,
+          language,
+          registration_status,
+          kyc_status,
+        };
+        const token = jwt.sign(
+          {
+            tokenPayload,
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: "180d" }
+        );
 
         const secKey = Buffer.from(process.env.CHAT_SERVER_SECRET, "base64");
-        const chat_token = jwt.sign({
-          jid: `${preUser.username}@${process.env.CHAT_SERVER_HOST}`,
-          exp: Math.floor(Date.now() / 1000) + 180 * 24 * 60 * 60
-        }, secKey, { noTimestamp: true });
+        const chat_token = jwt.sign(
+          {
+            jid: `${preUser.username}@${process.env.CHAT_SERVER_HOST}`,
+            exp: Math.floor(Date.now() / 1000) + 180 * 24 * 60 * 60,
+          },
+          secKey,
+          { noTimestamp: true }
+        );
 
         await otpSchema.deleteMany({ contact_no });
         console.log("🗑️ Old OTP records deleted");
@@ -484,7 +577,7 @@ export const verifyOtp = async (req, res) => {
         if (!isBlocked) {
           await User.findByIdAndUpdate(preUser._id, {
             ...(device_token && { device_token }),
-            ...(one_signal_player_id && { one_signal_player_id })
+            ...(one_signal_player_id && { one_signal_player_id }),
           });
           console.log("📱 Device tokens updated");
         }
@@ -500,22 +593,23 @@ export const verifyOtp = async (req, res) => {
           data: userData,
           chat_token,
           isBlocked: !!isBlocked,
-          blockedType: isBlocked?.type || null
+          blockedType: isBlocked?.type || null,
         });
       } else {
         console.warn("👥 OTP verified but user not found. Unregistered user.");
         await otpSchema.findByIdAndUpdate(numberisExisting._id, {
           isVerified: true,
           lock_time: null,
-          preUser: false
+          preUser: false,
         });
 
         return res.status(200).json({
           success: true,
-          message: "OTP verified, but user is not registered. Please complete registration.",
+          message:
+            "OTP verified, but user is not registered. Please complete registration.",
           token: false,
           data: null,
-          chat_token: null
+          chat_token: null,
         });
       }
     }
@@ -527,14 +621,30 @@ export const verifyOtp = async (req, res) => {
       isVerified: false,
       lock_time: null,
       failure_attempts:
-        numberisExisting.failure_attempts >= 1 && numberisExisting.failure_attempts < 4
+        numberisExisting.failure_attempts >= 1 &&
+        numberisExisting.failure_attempts < 4
           ? numberisExisting.failure_attempts + 1
-          : 1
+          : 1,
     });
 
     return res.status(400).json({ message: "Invalid OTP" });
   } catch (err) {
     console.error("🔥 Error in verifyOtp:", err.message);
-    return res.status(500).json({ message: "Error verifying OTP", error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Error verifying OTP", error: err.message });
   }
 };
+
+
+export const getUser = async (req, res) => {
+  try{
+
+    
+    const user = await User.findById(req.userId);
+    return res.status(200).json({status:true, data:user, }) 
+  }catch(err){
+    console.error("🔥 Error in getUser:", err.message);
+    return res.status(500).json({ message: "Error fetching user", error: err.message });
+  }
+}
