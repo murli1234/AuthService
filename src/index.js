@@ -5,9 +5,44 @@ import cors from "cors"; // Import cors
 import { beyonderLogger } from "./utils/logger.js";
 import apiRoutes from "./routes/index.js"; // Renamed for clarity
 import { connectDB } from "./config/database.js";
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import swaggerJsDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+
 
 // Load environment variables
 dotenv.config();
+
+// Determine which .env file to use based on NODE_ENV
+const getEnvPath = () => {
+  switch (process.env.NODE_ENV) {
+    case "PROD":
+      return ".env.prod";
+    case "DEV":
+      return ".env.dev";
+    default:
+      return ".env.test";
+  }
+};
+
+let envFile = getEnvPath();
+
+// Load the appropriate .env file
+dotenv.config({ path: envFile });
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+console.log(
+  "server.js 1 ----------- ",
+  process.env.NODE_ENV,
+  getEnvPath(),
+  process.env.HOST,
+  __dirname,
+  envFile
+);
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,6 +54,59 @@ app.use(cors());
 app.use(express.json());
 // Optional: Parse URL-encoded request bodies
 // app.use(express.urlencoded({ extended: true }));
+
+
+
+//swagger doc
+
+// Swagger Setup
+const swaggerOptions = {
+  swaggerDefinition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'BlueCS HR portal API',
+      version: '1.0.0',
+      description: 'API documentation for BlueCS HR portal application',
+      contact: {
+        name: 'Deepanshu Sharma',
+        email: 'in.prince.sharma@gmail.com',
+      },
+    },
+    components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+    security: [{ BearerAuth: [] }],
+    servers: [ 
+      {
+     // url:`localhost:3000`,
+     // url:`${process.env.APP_URL}`
+      //url:`http://13.201.253.18:5000`
+      },
+    ],
+  },
+  apis: [path.join(__dirname, 'swagger/*.swagger.js')]
+};
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+// Static Uploads
+const uploadsDir = path.join(__dirname, 'uploads');
+app.use('/uploads', express.static(uploadsDir));
+app.get('/uploads/:filename', (req, res) => {
+  const filePath = join(dirname(__dirname), 'uploads', req.params.filename);
+  return res.sendFile(filePath, (err) => {
+    if (err) res.status(404).json({ message: 'File not found' });
+  });
+});
+
+
 
 // --- API Routes ---
 app.use("/api", apiRoutes);
