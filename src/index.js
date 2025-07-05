@@ -84,9 +84,9 @@ const swaggerOptions = {
       {
         //when running locally
      // url:  `http://localhost:3000`,
-
+url:  `http://65.0.133.236:3000/`,
      //when running in aws
-      url:`${process.env.APP_URL}`
+     // url:`${process.env.APP_URL}`
       },
     ],
   },
