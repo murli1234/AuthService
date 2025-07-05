@@ -160,17 +160,22 @@ export const addUser = async (req, res) => {
         return res.status(400).json({ message: "Bike details required" });
       }
     }
+    const userQuery = [{ contact_no: data.contact_no }];
+    if (data.email && data.email.trim() !== "") {
+      userQuery.push({ email: data.email.trim() });
+      }
 
-    const existingUser = await User.findOne({
-      $or: [{ contact_no: data.contact_no }, { email: data.email }],
-    });
+    const existingUser = await User.findOne({ $or: userQuery });
+    // const existingUser = await User.findOne({
+    //   $or: [{ contact_no: data.contact_no }, { email: data.email }],
+    // });
     if (existingUser) {
       console.warn("❌ User already exists");
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const username = await generateUniqueUsername(data.name, data.contact_no);
-    console.log("👤 Generated username:", username);
+    const uniqueUsername = await generateUniqueUsername(data.name, data.contact_no);
+    console.log("👤 Generated username:", uniqueUsername);
 
     const otp = await otpSchema.findOne({
       contact_no: data.contact_no,
@@ -212,7 +217,7 @@ export const addUser = async (req, res) => {
 
     const newUser = new User({
       ...data,
-      username,
+      username:uniqueUsername,
       password: hashedPassword,
       referral_points: referralCode ? 300 : 0,
       referred_by: referral?.created_by,
@@ -274,12 +279,66 @@ export const addUser = async (req, res) => {
     // await ReferralCodeSchema.create({ created_by: newUser._id, code, max_usage_count: 100 });
     // console.log("🎁 Referral code created:", code);
 
-    const token = jwt.sign(
-      { id: newUser._id, username, account_type: data.account_type },
-      process.env.JWT_SECRET,
-      { expiresIn: "180d" }
-    );
-    console.log("🔑 JWT token generated");
+    // const token = jwt.sign(
+    //   { id: newUser._id, username, account_type: data.account_type },
+    //   process.env.JWT_SECRET,
+    //   { expiresIn: "180d" }
+    // );
+    // console.log("🔑 JWT token generated");
+
+
+      const {
+          _id,
+          name,
+          username,
+          email,
+          contact_no,
+          role,
+          account_type,
+          profile_image,
+          referral_points,
+          device_token,
+          one_signal_player_id,
+          language,
+          registration_status,
+          kyc_status,
+        } = newUser.toObject(); // toObject strips Mongoose methods
+
+        const tokenPayload = {
+          _id,
+          name,
+          username,
+          email,
+          contact_no,
+          role,
+          account_type,
+          profile_image,
+          referral_points,
+          device_token,
+          one_signal_player_id,
+          language,
+          registration_status,
+          kyc_status,
+        };
+        const token = jwt.sign(
+          {
+            tokenPayload,
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: "180d" }
+        );
+
+        // const secKey = Buffer.from(process.env.CHAT_SERVER_SECRET, "base64");
+        // const chat_token = jwt.sign(
+        //   {
+        //     jid: `${preUser.username}@${process.env.CHAT_SERVER_HOST}`,
+        //     exp: Math.floor(Date.now() / 1000) + 180 * 24 * 60 * 60,
+        //   },
+        //   secKey,
+        //   { noTimestamp: true }
+        // );
+
+
 
     // await establishConnectionWithAdmin(newUser);
     // console.log("🤝 Admin connection established");
@@ -590,7 +649,7 @@ export const verifyOtp = async (req, res) => {
           message: isBlocked
             ? `Your account is restricted by admin (${isBlocked.type}).`
             : "Login successful",
-          token,
+          token:token,
           data: userData,
           chat_token,
           isBlocked: !!isBlocked,
@@ -608,7 +667,7 @@ export const verifyOtp = async (req, res) => {
           success: true,
           message:
             "OTP verified, but user is not registered. Please complete registration.",
-          token: false,
+          token:null,
           data: null,
           chat_token: null,
         });
