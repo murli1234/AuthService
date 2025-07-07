@@ -83,8 +83,8 @@ const swaggerOptions = {
     servers: [ 
       {
         //when running locally
-   //   url:  `http://localhost:3000`,
-      url:'http://65.0.133.236:3000/',
+      url:  `http://localhost:3000`,
+   //   url:'http://65.0.133.236:3000/',
      //when running in aws
       //url:`${process.env.APP_URL}`
       },
@@ -132,7 +132,7 @@ connectDB()
     app.listen(PORT, async () => {
       await beyonderLogger(); // Await the logger as it is now async
       console.log(`✅ Server listening on http://localhost:${PORT}`);
-      console.log(`   MONGODB_URI: ${process.env.MONGO_URI}`) // Log the db URI being used for confirmation
+      console.log(`   MONGODB_URI: ${process.env.DATABASE_URL}`) // Log the db URI being used for confirmation
     });
   })
   .catch((err) => {

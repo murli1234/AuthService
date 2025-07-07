@@ -1,78 +1,78 @@
-import User from "../schema/user.schema.js";
+
 import Axios from 'axios'; // or const Axios = require('axios');
 
-export const generateUniqueUsername = async (firstName, contactNo) => {
-  try {
-    let baseUsername = '';
+// export const generateUniqueUsername = async (firstName, contactNo) => {
+//   try {
+//     let baseUsername = '';
 
-    if (firstName) {
-      baseUsername = firstName.toLowerCase().replace(/[^a-z0-9]/g, '');
-    } else {
-      baseUsername = 'user';
-    }
+//     if (firstName) {
+//       baseUsername = firstName.toLowerCase().replace(/[^a-z0-9]/g, '');
+//     } else {
+//       baseUsername = 'user';
+//     }
 
-    if (contactNo && contactNo.length >= 4) {
-      baseUsername += contactNo.slice(-4);
-    } else {
-      baseUsername += Math.floor(1000 + Math.random() * 9000);
-    }
+//     if (contactNo && contactNo.length >= 4) {
+//       baseUsername += contactNo.slice(-4);
+//     } else {
+//       baseUsername += Math.floor(1000 + Math.random() * 9000);
+//     }
 
-    // Get existing chat usernames from chat server
-    const registeredUsers = await Axios.post(
-      `http://${process.env.CHAT_SERVER_HOST}:${process.env.CHAT_SERVER_PORT}/api/registered_users`,
-      {
-        host: process.env.CHAT_SERVER_HOST,
-      },
-      {
-        auth: {
-          username: process.env.CHAT_HTTP_USERNAME,
-          password: process.env.CHAT_HTTP_PASSWORD,
-        },
-        httpsAgent,
-      }
-    );
+//     // Get existing chat usernames from chat server
+//     const registeredUsers = await Axios.post(
+//       `http://${process.env.CHAT_SERVER_HOST}:${process.env.CHAT_SERVER_PORT}/api/registered_users`,
+//       {
+//         host: process.env.CHAT_SERVER_HOST,
+//       },
+//       {
+//         auth: {
+//           username: process.env.CHAT_HTTP_USERNAME,
+//           password: process.env.CHAT_HTTP_PASSWORD,
+//         },
+//         httpsAgent,
+//       }
+//     );
 
-    const existingChatUsernames = registeredUsers?.data || [];
+//     const existingChatUsernames = registeredUsers?.data || [];
 
-    let usernameExists = true;
-    let uniqueUsername = baseUsername;
-    let counter = 0;
-    let attempts = 0;
-    const maxAttempts = 10;
+//     let usernameExists = true;
+//     let uniqueUsername = baseUsername;
+//     let counter = 0;
+//     let attempts = 0;
+//     const maxAttempts = 10;
 
-    while (usernameExists && attempts < maxAttempts) {
-      attempts++;
+//     while (usernameExists && attempts < maxAttempts) {
+//       attempts++;
 
-      const existingUser = await User.findOne({ username: uniqueUsername });
-      const existingSalesPerson = await SalesPerson.findOne({ username: uniqueUsername });
-      const existsInChatServer = existingChatUsernames.includes(uniqueUsername.toLowerCase());
+//       const existingUser = await User.findOne({ username: uniqueUsername });
+//       const existingSalesPerson = await SalesPerson.findOne({ username: uniqueUsername });
+//       const existsInChatServer = existingChatUsernames.includes(uniqueUsername.toLowerCase());
 
-      if (!existingUser && !existingSalesPerson && !existsInChatServer) {
-        usernameExists = false;
-      } else {
-        counter++;
-        if (attempts % 4 === 0) {
-          uniqueUsername = baseUsername + Date.now().toString().slice(-5);
-        } else if (attempts % 4 === 1) {
-          uniqueUsername = baseUsername + Math.random().toString(36).substring(2, 5);
-        } else if (attempts % 4 === 2) {
-          uniqueUsername = baseUsername + counter + Math.floor(100 + Math.random() * 900);
-        } else {
-          uniqueUsername = baseUsername + new Date().getFullYear().toString().slice(-2) + Math.floor(1000 + Math.random() * 9000);
-        }
-      }
-    }
+//       if (!existingUser && !existingSalesPerson && !existsInChatServer) {
+//         usernameExists = false;
+//       } else {
+//         counter++;
+//         if (attempts % 4 === 0) {
+//           uniqueUsername = baseUsername + Date.now().toString().slice(-5);
+//         } else if (attempts % 4 === 1) {
+//           uniqueUsername = baseUsername + Math.random().toString(36).substring(2, 5);
+//         } else if (attempts % 4 === 2) {
+//           uniqueUsername = baseUsername + counter + Math.floor(100 + Math.random() * 900);
+//         } else {
+//           uniqueUsername = baseUsername + new Date().getFullYear().toString().slice(-2) + Math.floor(1000 + Math.random() * 9000);
+//         }
+//       }
+//     }
 
-    if (usernameExists) {
-      uniqueUsername = `user${Date.now().toString(36)}${Math.random().toString(36).substr(2, 5)}`;
-    }
+//     if (usernameExists) {
+//       uniqueUsername = `user${Date.now().toString(36)}${Math.random().toString(36).substr(2, 5)}`;
+//     }
 
-    return uniqueUsername;
-  } catch (error) {
-    console.error('Error generating unique username:', error);
-    return `user${Date.now().toString(36)}${Math.random().toString(36).substr(2, 5)}`;
-  }
-};
+//     return uniqueUsername;
+//   } catch (error) {
+//     console.error('Error generating unique username:', error);
+//     return `user${Date.now().toString(36)}${Math.random().toString(36).substr(2, 5)}`;
+//   }
+// };
 
 
 
