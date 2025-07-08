@@ -238,7 +238,7 @@ const token = jwt.sign(payload, process.env.JWT_SECRET, {
           ? "Your account is restricted by admin."
           : "Login successful",
         token,
-        user,
+        user:user._id,
         chat_token: null, // You can implement chat_token generation later
         isBlocked,
         blockedType: isBlocked ? "ADMIN_BLOCKED" : null,
