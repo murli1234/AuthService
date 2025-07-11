@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/sent-otp:
+ * /sent-otp:
  *   post:
  *     summary: Send OTP to a user
  *     description: |
@@ -61,7 +61,7 @@
 
 /**
  * @swagger
- * /api/verify-otp:
+ * /verify-otp:
  *   post:
  *     summary: Verify OTP and authenticate user
  *     description: |
