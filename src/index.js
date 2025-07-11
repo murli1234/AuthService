@@ -84,7 +84,7 @@ const swaggerOptions = {
       {
         //when running locally
     //  url:  `http://localhost:3000`,
-      url:'http://65.0.133.236:3000/',
+      url:'http://65.0.133.236:3000',
      // url:`https://p3qw782za2.execute-api.ap-south-1.amazonaws.com/api/auth-service`
      //when running in aws
       //url:`${process.env.APP_URL}`
@@ -95,7 +95,7 @@ const swaggerOptions = {
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use('/api/auth-service/api-docs/', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use('/api-docs/', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 //https://p3qw782za2.execute-api.ap-south-1.amazonaws.com/api/auth-service/
 // Static Uploads
 const uploadsDir = path.join(__dirname, 'uploads');
