@@ -82,7 +82,6 @@ const swaggerOptions = {
     security: [{ BearerAuth: [] }],
     servers: [ 
       {
-        //when running locally
     
      // url:'http://65.0.133.236:3000',
      url:process.env.APP_URL ? process.env.APP_URL : 'http://localhost:3000'

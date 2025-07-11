@@ -197,9 +197,10 @@ export const verifyOtp = async (req, res) => {
       console.log("📋 User fetched:", user);
       
       if (!user || user.deleted_at) {
-        return res.status(400).json({
+        return res.status(200).json({
           success: false,
-          message: "User not found or deleted.",
+          user:false,
+          message: "No User Found. Create A New User",
         });
       }
 
@@ -258,7 +259,7 @@ const token = jwt.sign(payload, process.env.JWT_SECRET, {
       failure_attempts: updatedAttempts,
     });
 
-    return res.status(400).json({ message: "Invalid OTP" });
+    return res.status(400).json({ message: "Invalid OTP", status: false });
   } catch (err) {
     console.error("🔥 Error in verifyOtp:", err.message); 
     return res
