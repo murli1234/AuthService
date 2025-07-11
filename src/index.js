@@ -95,9 +95,7 @@ const swaggerOptions = {
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use('/api/auth-service/api-docs/', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-//https://p3qw782za2.execute-api.ap-south-1.amazonaws.com/api/auth-service/
-// Static Uploads
+app.use('/api-docs/', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 const uploadsDir = path.join(__dirname, 'uploads');
 app.use('/uploads', express.static(uploadsDir));
 app.get('/uploads/:filename', (req, res) => {
