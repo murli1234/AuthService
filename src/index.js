@@ -53,7 +53,7 @@ app.use(cors());
 app.use(express.json());
 // Optional: Parse URL-encoded request bodies
 // app.use(express.urlencoded({ extended: true }));
-app.use('/', userRouter); 
+app.use('/',userRouter); 
 
 //swagger doc
 
@@ -83,9 +83,9 @@ const swaggerOptions = {
     servers: [ 
       {
         //when running locally
-    //  url:  `http://localhost:3000`,
-      url:'http://65.0.133.236:3000',
-     // url:`https://p3qw782za2.execute-api.ap-south-1.amazonaws.com/api/auth-service`
+    // url:  `http://localhost:3000`,
+     // url:'http://65.0.133.236:3000',
+     url:`https://p3qw782za2.execute-api.ap-south-1.amazonaws.com/api/auth-service/`
      //when running in aws
       //url:`${process.env.APP_URL}`
       },
@@ -96,8 +96,7 @@ const swaggerOptions = {
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs/', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-//https://p3qw782za2.execute-api.ap-south-1.amazonaws.com/api/auth-service/
-// Static Uploads
+
 const uploadsDir = path.join(__dirname, 'uploads');
 app.use('/uploads', express.static(uploadsDir));
 app.get('/uploads/:filename', (req, res) => {
@@ -111,9 +110,9 @@ app.get('/uploads/:filename', (req, res) => {
 
 
 // --- Root Endpoint ---
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to the be_auth_service API! ✨" });
-});
+// app.get("/", (req, res) => {
+//   res.json({ message: "Welcome to the be_auth_service API! ✨" });
+// });
 
 // --- Global Error Handler (Example - Implement properly based on needs) ---
 app.use((err, req, res, next) => {
