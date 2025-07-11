@@ -83,11 +83,10 @@ const swaggerOptions = {
     servers: [ 
       {
         //when running locally
-    // url:  `http://localhost:3000`,
+    
      // url:'http://65.0.133.236:3000',
-     url:`https://p3qw782za2.execute-api.ap-south-1.amazonaws.com/api/auth-service/`
-     //when running in aws
-      //url:`${process.env.APP_URL}`
+     url:process.env.APP_URL ? process.env.APP_URL : 'http://localhost:3000'
+    // url:`https://p3qw782za2.execute-api.ap-south-1.amazonaws.com/api/auth-service/`
       },
     ],
   },
@@ -109,10 +108,10 @@ app.get('/uploads/:filename', (req, res) => {
 // --- API Routes ---
 
 
-// --- Root Endpoint ---
-// app.get("/", (req, res) => {
-//   res.json({ message: "Welcome to the be_auth_service API! ✨" });
-// });
+//--- Root Endpoint ---
+app.get("/", (req, res) => {
+  res.json({ message: "Welcome to the be_auth_service API! ✨" });
+});
 
 // --- Global Error Handler (Example - Implement properly based on needs) ---
 app.use((err, req, res, next) => {
