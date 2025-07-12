@@ -186,77 +186,83 @@ export const verifyOtp = async (req, res) => {
       return res.status(400).json({ message: "Too many attempts. Locked for 60 mins." });
     }
 
-    // ✅ OTP Match
-    if (numberisExisting.otp === otp) {
+     if (numberisExisting.otp === otp) {
       console.log("✅ OTP matched");
 
-      const user = await sendRPC('require_user_data', {
-        action: 'GET_USER_BY_CONTACT',
+      const result = await sendRPC("require_user_data", {
+        action: "GET_USER_BY_CONTACT",
         contact_no,
       });
-      console.log("📋 User fetched:", user);
-      
+
+      const user = result?.user;
+      const business = result?.business;
+
       if (!user || user.deleted_at) {
         return res.status(200).json({
           success: false,
-          user:false,
+          user: false,
           message: "No User Found. Create A New User",
         });
       }
 
-      // Admin block check (optional, could be part of user payload from RabbitMQ too)
-      const isBlocked = user?.blocked_type === "ADMIN_BLOCKED"; // if you add that in RabbitMQ response
-
+      const isBlocked = user?.blocked_type === "ADMIN_BLOCKED";
 
       const payload = {
-  _id: user._id,
-  contact_no: user.contact_no,
-};
-if (user.username) payload.username = user.username;
-if (user.name) payload.name = user.name;
-if (user.role) payload.role = user.role;
-if (user.account_type) payload.account_type = user.account_type;
-if (user.language) payload.language = user.language;
-if (user.referral_code) payload.referral_code = user.referral_code;
-if (user.referral_points !== undefined) payload.referral_points = user.referral_points;
-if (user.profile_image) payload.profile_image = user.profile_image;
+        _id: user._id,
+        contact_no: user.contact_no,
+        ...(user.username && { username: user.username }),
+        ...(user.name && { name: user.name }),
+        ...(user.role && { role: user.role }),
+        ...(user.account_type && { account_type: user.account_type }),
+        ...(user.language && { language: user.language }),
+        ...(user.referral_code && { referral_code: user.referral_code }),
+        ...(user.referral_points !== undefined && { referral_points: user.referral_points }),
+        ...(user.profile_image && { profile_image: user.profile_image }),
+        ...(business && {
+          business: {
+            _id: business._id,
+            business_name: business.business_name,
+            logo: business.logo,
+          },
+        }),
+      };
 
-  if (user.account_type === 'BUSINESS' && business) {
-      payload.business = {
-      _id: business._id,
-      business_name: business.business_name,
-      logo: business.logo,
-    };
-  }
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: "180d",
+      });
 
-const token = jwt.sign(payload, process.env.JWT_SECRET, {
-  expiresIn: "180d",
-});
-
-
-      // Clean up old OTP
+      // ✅ Clean up OTP
       await otpSchema.deleteMany({ contact_no });
 
+      // TODO: Send device_token and one_signal_player_id to update user devices if needed
 
-      //sending RPC to update user device token
-    console.log (`response`,  {success: true,
-        message: isBlocked
-          ? "Your account is restricted by admin."
-          : "Login successful",
-        token,
-        user:user._id,
-        chat_token: null, // You can implement chat_token generation later
-        isBlocked,
-        blockedType: isBlocked ? "ADMIN_BLOCKED" : null})
-      
       return res.status(200).json({
         success: true,
         message: isBlocked
           ? "Your account is restricted by admin."
           : "Login successful",
         token,
-        user:user._id,
-        chat_token: null, // You can implement chat_token generation later
+        user: {
+          _id: user._id,
+          contact_no: user.contact_no,
+          name: user.name || null,
+          username: user.username || null,
+          profile_image: user.profile_image || null,
+          account_type: user.account_type,
+          referral_code: user.referral_code || null,
+          referral_points: user.referral_points || 0,
+          language: user.language || "ENG",
+        },
+        business: business
+          ? {
+              _id: business._id,
+              business_name: business.business_name,
+              logo: business.logo,
+              isVerified: business.business_isVerified || false,
+              live_photos: business.live_photos || [],
+            }
+          : null,
+        chat_token: null,
         isBlocked,
         blockedType: isBlocked ? "ADMIN_BLOCKED" : null,
       });
@@ -277,10 +283,10 @@ const token = jwt.sign(payload, process.env.JWT_SECRET, {
 
     return res.status(400).json({ message: "Invalid OTP", status: false });
   } catch (err) {
-    console.error("🔥 Error in verifyOtp:", err.message); 
-    return res
-      .status(500)
-      .json({ message: "Error verifying OTP", error: err.message });
+    console.error("🔥 Error in verifyOtp:", err.message);
+    return res.status(500).json({
+      message: "Error verifying OTP",
+      error: err.message,
+    });
   }
 };
-
