@@ -221,6 +221,14 @@ if (user.referral_code) payload.referral_code = user.referral_code;
 if (user.referral_points !== undefined) payload.referral_points = user.referral_points;
 if (user.profile_image) payload.profile_image = user.profile_image;
 
+  if (user.account_type === 'BUSINESS' && business) {
+      payload.business = {
+      _id: business._id,
+      business_name: business.business_name,
+      logo: business.logo,
+    };
+  }
+
 const token = jwt.sign(payload, process.env.JWT_SECRET, {
   expiresIn: "180d",
 });

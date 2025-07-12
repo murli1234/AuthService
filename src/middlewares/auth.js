@@ -12,7 +12,6 @@ export const authenticateUser = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     const token = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : authHeader;
 
-
     if (!token) {
       console.warn('🚫 No token provided in headers');
       return res.status(400).json({ message: "No token provided" });
