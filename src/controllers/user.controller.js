@@ -239,7 +239,15 @@ const token = jwt.sign(payload, process.env.JWT_SECRET, {
 
 
       //sending RPC to update user device token
-
+    console.log (`response`,  {success: true,
+        message: isBlocked
+          ? "Your account is restricted by admin."
+          : "Login successful",
+        token,
+        user:user._id,
+        chat_token: null, // You can implement chat_token generation later
+        isBlocked,
+        blockedType: isBlocked ? "ADMIN_BLOCKED" : null})
       
       return res.status(200).json({
         success: true,
