@@ -16,6 +16,7 @@ export const connectRabbitMQ = async () => {
 
 // RPC: Send request and wait for reply
 export const sendRPC = async (queueName, message) => {
+  console.log("📨 Sending RPC to queue:", queueName, "Message:", message);
   const { channel } = await connectRabbitMQ();
   await channel.assertQueue(queueName, { durable: false });
 

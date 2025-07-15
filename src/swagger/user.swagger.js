@@ -140,3 +140,104 @@
  *       500:
  *         description: Server Error
  */
+/**
+ * @swagger
+ * /adminLogin:
+ *   post:
+ *     summary: Admin login using email and password
+ *     tags:
+ *       - User Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: admin@example.com
+ *               password:
+ *                 type: string
+ *                 example: yourpassword123
+ *     responses:
+ *       200:
+ *         description: Login response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Login successful
+ *                 token:
+ *                   type: string
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: 64abc12345de678f90123456
+ *                     contact_no:
+ *                       type: string
+ *                       example: "+911234567890"
+ *                     name:
+ *                       type: string
+ *                       example: Admin Name
+ *                     username:
+ *                       type: string
+ *                       example: adminuser
+ *                     profile_image:
+ *                       type: string
+ *                       example: https://example.com/image.png
+ *                     account_type:
+ *                       type: string
+ *                       example: ADMIN
+ *                     referral_code:
+ *                       type: string
+ *                       example: REF123
+ *                     referral_points:
+ *                       type: number
+ *                       example: 100
+ *                     language:
+ *                       type: string
+ *                       example: ENG
+ *                 role:
+ *                   type: string
+ *                   example: ADMIN
+ *       400:
+ *         description: Missing fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Both the fields are required
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Error Login By Email And Password
+ *                 error:
+ *                   type: string
+ *                   example: Error details
+ */

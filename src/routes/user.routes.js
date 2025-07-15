@@ -10,4 +10,6 @@ userRouter.post('/sent-otp', controller.sendOtp)
 
 userRouter.post('/verify-otp',controller.verifyOtp)
 
+userRouter.post('/adminLogin',controller.adminLogin)
+
 export default userRouter;

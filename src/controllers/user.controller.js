@@ -294,3 +294,156 @@ export const verifyOtp = async (req, res) => {
     });
   }
 };
+
+// export const adminLogin = async(req,res)=>{
+//   try{
+//     const {email, password} = req.body;
+
+//     if(!email || !password)
+//       return res.status(200).json({status:false, message:"both the fields are required"});
+
+//         const user = await sendRPC("require_user_data", {
+//         action: "GET_USER_BY_EMAIL",
+//         email,
+//       });
+
+//       console.log('user______________________________',user);
+      
+//       if(!user) return res.status(200).json({status:false, message:"user not found anter a valid email id"});
+      
+//       if(user.password != password)
+//          return res.status(200).json({status:false, message:"incorrect password"});
+
+//        const payload = {
+//         _id: user._id,
+//         contact_no: user.contact_no,
+//         ...(user.username && { username: user.username }),
+//         ...(user.name && { name: user.name }),
+//         ...(user.role && { role: user.role }),
+//         ...(user.account_type && { account_type: user.account_type }),
+//         ...(user.language && { language: user.language }),
+//         ...(user.referral_code && { referral_code: user.referral_code }),
+//         ...(user.referral_points !== undefined && { referral_points: user.referral_points }),
+//         ...(user.profile_image && { profile_image: user.profile_image }),
+//         };
+
+//         const token = jwt.sign(payload, process.env.JWT_SECRET, {
+//         expiresIn: "180d",
+//       });
+
+
+    
+//       // TODO: Send device_token and one_signal_player_id to update user devices if needed
+
+//       return res.status(200).json({
+//         success: true,
+//         message: isBlocked
+//           ? "Your account is restricted by admin."
+//           : "Login successful",
+//         token,
+//         user: {
+//           _id: user._id,
+//           contact_no: user.contact_no,
+//           name: user.name || null,
+//           username: user.username || null,
+//           profile_image: user.profile_image || null,
+//           account_type: user.account_type,
+//           referral_code: user.referral_code || null,
+//           referral_points: user.referral_points || 0,
+//           language: user.language || "ENG",
+//         },
+//         role:role,
+//       });
+
+//   }catch(err){
+//  console.error("🔥 Error in verification:", err.message);
+//     return res.status(500).json({
+//       message: "Error Login By Email And Password",
+//       error: err.message,
+//     });
+//   }
+// }
+
+export const adminLogin = async (req, res) => {
+  try {
+    console.log("📥 Incoming admin login request:", req.body);
+
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      console.warn("⚠️ Email or password missing in request");
+      return res.status(200).json({ status: false, message: "Both the fields are required" });
+    }
+
+    console.log("🔍 Fetching user from RPC service...");
+    const user = await sendRPC("require_user_data", {
+      action: "GET_USER_BY_EMAIL",
+      email,
+    });
+
+    console.log("👤 User data received from RPC:", user);
+
+    if (!user) {
+      console.warn("❌ User not found for email:", email);
+      return res.status(200).json({ status: false, message: "User not found. Enter a valid email ID." });
+    }
+
+    if (user.password !== password) {
+      console.warn("❌ Incorrect password for user:", email);
+      return res.status(200).json({ status: false, message: "Incorrect password" });
+    }
+
+    console.log("✅ Password matched. Creating JWT token...");
+
+    const payload = {
+      _id: user._id,
+      contact_no: user.contact_no,
+      ...(user.username && { username: user.username }),
+      ...(user.name && { name: user.name }),
+      ...(user.role && { role: user.role }),
+      ...(user.account_type && { account_type: user.account_type }),
+      ...(user.language && { language: user.language }),
+      ...(user.referral_code && { referral_code: user.referral_code }),
+      ...(user.referral_points !== undefined && { referral_points: user.referral_points }),
+      ...(user.profile_image && { profile_image: user.profile_image }),
+    };
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "180d",
+    });
+
+    console.log("🔐 JWT token generated");
+
+    // Optional: Handle blocked user logic here if you implement isBlocked check
+    const isBlocked = false; // ← TEMP fallback, replace with actual check if needed
+
+    console.log("🚀 Login successful for user:", user.email);
+
+    return res.status(200).json({
+      success: true,
+      message: isBlocked
+        ? "Your account is restricted by admin."
+        : "Login successful",
+      token,
+      user: {
+        _id: user._id,
+        contact_no: user.contact_no,
+        name: user.name || null,
+        username: user.username || null,
+        profile_image: user.profile_image || null,
+        account_type: user.account_type,
+        referral_code: user.referral_code || null,
+        referral_points: user.referral_points || 0,
+        language: user.language || "ENG",
+      },
+      role: user.role || null,
+    });
+
+  } catch (err) {
+    console.error("🔥 Error in adminLogin:", err.message, err);
+    return res.status(500).json({
+      message: "Error Login By Email And Password",
+      error: err.message,
+    });
+  }
+};
