@@ -195,7 +195,7 @@ export const verifyOtp = async (req, res) => {
       });
 
       const user = result?.user;
-      const role = result.role;
+      const role = result?.role;
       const business = result?.business;
 
       if (!user || user.deleted_at) {
