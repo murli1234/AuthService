@@ -195,6 +195,7 @@ export const verifyOtp = async (req, res) => {
       });
 
       const user = result?.user;
+      const role = result.role;
       const business = result?.business;
 
       if (!user || user.deleted_at) {
@@ -227,6 +228,8 @@ export const verifyOtp = async (req, res) => {
         }),
       };
 
+      payload.role=role;
+
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "180d",
       });
@@ -253,6 +256,7 @@ export const verifyOtp = async (req, res) => {
           referral_points: user.referral_points || 0,
           language: user.language || "ENG",
         },
+        role:role,
         business: business
           ? {
               _id: business._id,
