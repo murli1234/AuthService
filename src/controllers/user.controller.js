@@ -208,28 +208,44 @@ export const verifyOtp = async (req, res) => {
 
       const isBlocked = user?.blocked_type === "ADMIN_BLOCKED";
 
+      // const payload = {
+      //   _id: user._id,
+      //   contact_no: user.contact_no,
+      //   ...(user.username && { username: user.username }),
+      //   ...(user.name && { name: user.name }),
+      //   ...(user.role && { role: user.role }),
+      //   ...(user.account_type && { account_type: user.account_type }),
+      //   ...(user.language && { language: user.language }),
+      //   ...(user.referral_code && { referral_code: user.referral_code }),
+      //   ...(user.referral_points !== undefined && { referral_points: user.referral_points }),
+      //   ...(user.profile_image && { profile_image: user.profile_image }),
+      //   ...(business && {
+      //     business: {
+      //       _id: business._id,
+      //       business_name: business.business_name,
+      //       logo: business.logo,
+      //     },
+      //   }),
+      // };
+      // if(role){
+      //   payload.role=role;
+      // }
+
       const payload = {
-        _id: user._id,
-        contact_no: user.contact_no,
-        ...(user.username && { username: user.username }),
-        ...(user.name && { name: user.name }),
-        ...(user.role && { role: user.role }),
-        ...(user.account_type && { account_type: user.account_type }),
-        ...(user.language && { language: user.language }),
-        ...(user.referral_code && { referral_code: user.referral_code }),
-        ...(user.referral_points !== undefined && { referral_points: user.referral_points }),
-        ...(user.profile_image && { profile_image: user.profile_image }),
-        ...(business && {
-          business: {
-            _id: business._id,
-            business_name: business.business_name,
-            logo: business.logo,
-          },
-        }),
-      };
-      if(role){
-        payload.role=role;
+  _id: {
+    ...user,
+    ...(business && {
+      business: {
+        _id: business._id,
+        business_name: business.business_name,
+        logo: business.logo,
+        isVerified: business.business_isVerified || false,
+        live_photos: business.live_photos || [],
       }
+    }),
+    ...(role && { role }),
+  },
+};
 
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "180d",
