@@ -227,8 +227,9 @@ export const verifyOtp = async (req, res) => {
           },
         }),
       };
-
-      payload.role=role;
+      if(role){
+        payload.role=role;
+      }
 
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "180d",
