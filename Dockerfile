@@ -1,23 +1,31 @@
-# Use the official Node.js 20 LTS image
-FROM node:20-alpine
+# --------------------
+# 🏗️ Builder Stage
+# --------------------
+FROM node:20-alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json first to leverage Docker cache
+# Copy package files first to leverage caching
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install production dependencies only
+RUN npm ci --omit=dev
 
-# Copy the rest of the application code
+# Copy the rest of the source code
 COPY . .
 
-# Expose the port your app runs on
+# ----------------------------
+# 🪶 Runtime Stage (Alpine Minimal)
+# ----------------------------
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy the built app and installed production dependencies
+COPY --from=builder /app .
+
+# Expose app port
 EXPOSE 3000
 
-# Set environment variables for production (if not using .env in Docker)
-# ENV NODE_ENV=production
-
-# Command to run the application
-CMD ["npm", "start"]
+# Start the Node.js service
+CMD ["node", "src/index.js"]

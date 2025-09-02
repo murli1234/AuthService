@@ -1,0 +1,85 @@
+# --------------------
+# 🏗️ Build Stage
+# --------------------
+FROM node:20 AS builder
+
+WORKDIR /app
+
+# Copy only dependency files first for caching
+COPY package*.json ./
+
+# Install dependencies (including dev ones if needed for build scripts)
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# -------------------------------
+# 🪶 Runtime Stage (Slimmed Down)
+# -------------------------------
+FROM node:20-slim
+
+# Install only PM2 (not globally, to avoid pollution)
+RUN npm install -g pm2
+
+WORKDIR /app
+
+# Copy only the built app and production-only dependencies from builder
+COPY --from=builder /app ./
+
+# Re-install only production dependencies
+RUN npm ci --omit=dev
+
+# Optionally expose port (adjust as needed for each service)
+EXPOSE 3000
+
+# Start service with PM2 runtime (recommended for containers)
+CMD ["pm2-runtime", "src/index.js", "--name", "auth-service"]
+
+
+
+# 🪶 Runtime (Distroless)
+FROM gcr.io/distroless/nodejs20-debian11 # for ultra-light image
+
+WORKDIR /app
+COPY --from=builder /app .
+
+CMD ["src/index.js"]
+
+
+# --------------------
+# 🏗️ Builder Stage
+# --------------------
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy dependency files and install production-only deps
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+# Copy source files
+COPY . .
+
+# Clean up dev/test files before final image
+RUN rm -rf .env* .git* *.md jest.config.js tests/ .vscode .prettierrc* .eslintrc* README.md
+
+# ----------------------------
+# 🪶 Runtime Stage (Distroless)
+# ----------------------------
+FROM gcr.io/distroless/nodejs20-debian11
+
+WORKDIR /app
+
+# Copy app and installed node_modules
+COPY --from=builder /app .
+
+# ✅ Correct CMD: Node + path to your entry point
+CMD ["node", "src/index.js"]
+
+
+docker build -t auth-service .
+docker run -p 3000:3000 auth-service
+docker run --env-file .env -p 3000:3000 auth-service
+
+docker tag auth-service:latest 533267333946.dkr.ecr.ap-south-1.amazonaws.com/be/auth-service:latest
